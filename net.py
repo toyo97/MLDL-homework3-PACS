@@ -90,16 +90,26 @@ class DANN(nn.Module):
         return x
 
 
-def dann(pretrained=False, progress=True, **kwargs):
+def dann(pretrained=False, progress=True, num_classes=1000):
     """
     Custom DANN implementation with AlexNet architecture
     :param pretrained: flag to decide whether to load pretrained weights
     :param progress: show the download progress bar
     :return: model
     """
-    model = DANN(**kwargs)
+    model = DANN()
     if pretrained:
         state_dict = load_state_dict_from_url(model_urls['alexnet'],
                                               progress=progress)
         model.load_state_dict(state_dict, strict=False)
+        # copy parameters in fc6 to discriminator branch
+        model.discriminator[1].weight.data = torch.tensor(model.classifier[1].weight.data)
+        model.discriminator[1].bias.data = torch.tensor(model.classifier[1].bias.data)
+        # copy parameters in fc7 to discriminator branch
+        model.discriminator[4].weight.data = torch.tensor(model.classifier[4].weight.data)
+        model.discriminator[4].bias.data = torch.tensor(model.classifier[4].bias.data)
+
+        if num_classes != 1000:
+            model.classifier[6] = nn.Linear(4096, num_classes)
+
     return model
