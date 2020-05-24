@@ -103,11 +103,11 @@ def dann(pretrained=False, progress=True, num_classes=1000):
                                               progress=progress)
         model.load_state_dict(state_dict, strict=False)
         # copy parameters in fc6 to discriminator branch
-        model.discriminator[1].weight.data = torch.tensor(model.classifier[1].weight.data)
-        model.discriminator[1].bias.data = torch.tensor(model.classifier[1].bias.data)
+        model.discriminator[1].weight.data = model.classifier[1].weight.data.clone().detach().requires_grad_(True)
+        model.discriminator[1].bias.data = model.classifier[1].bias.data.clone().detach().requires_grad_(True)
         # copy parameters in fc7 to discriminator branch
-        model.discriminator[4].weight.data = torch.tensor(model.classifier[4].weight.data)
-        model.discriminator[4].bias.data = torch.tensor(model.classifier[4].bias.data)
+        model.discriminator[4].weight.data = model.classifier[4].weight.data.clone().detach().requires_grad_(True)
+        model.discriminator[4].bias.data = model.classifier[4].bias.data.clone().detach().requires_grad_(True)
 
         if num_classes != 1000:
             model.classifier[6] = nn.Linear(4096, num_classes)
