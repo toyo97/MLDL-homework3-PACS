@@ -1,3 +1,5 @@
+import sys
+import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -6,6 +8,8 @@ from torch.backends import cudnn
 from torch.utils.data import DataLoader
 from torchvision import transforms
 from tqdm import tqdm
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from net import dann
 
@@ -119,7 +123,9 @@ def DA_train(source_dir='HW3/PACS/photo', target_dir='HW3/PACS/art_painting', ba
     criterion = nn.CrossEntropyLoss()  # for both classifier and discriminator
     optimizer = optim.SGD(net.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
-    num_batches = max(len(source_dataset), len(target_dataset)) // batch_size
+    # NOTE: when target is sketches, the size of the dataset is significantly different
+    # consider changing the policy for the number of batches for each iteration, from min to max and viceversa
+    num_batches = min(len(source_dataset), len(target_dataset)) // batch_size
     net = net.to(device)
     cudnn.benchmark = True  # optimizes runtime
     src_accs = []
